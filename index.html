@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Mis Macros</title>
+<meta name="theme-color" content="#0f1115" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Macros" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<header class="topbar">
+  <div class="date-nav">
+    <button id="prevDay" class="icon-btn" aria-label="Día anterior">‹</button>
+    <div id="currentDateLabel" class="date-label">Hoy</div>
+    <button id="nextDay" class="icon-btn" aria-label="Día siguiente">›</button>
+  </div>
+</header>
+
+<main id="view-today" class="view">
+  <section class="category-grid" id="categoryGrid"></section>
+
+  <section class="food-log">
+    <h3>Registro de hoy</h3>
+    <ul id="foodList" class="food-list"></ul>
+    <div id="emptyFood" class="empty-hint">Todavía no registraste nada hoy. Tocá un grupo para agregar.</div>
+  </section>
+</main>
+
+<main id="view-weight" class="view hidden">
+  <section class="weight-add">
+    <label for="weightInput">Peso de hoy (kg)</label>
+    <div class="weight-input-row">
+      <input id="weightInput" type="number" inputmode="decimal" step="0.1" placeholder="Ej: 78.4" />
+      <button id="saveWeight" class="primary-btn">Guardar</button>
+    </div>
+  </section>
+
+  <section class="weight-chart-section">
+    <div class="chart-header">
+      <h3>Evolución</h3>
+      <div class="range-toggle">
+        <button class="range-btn active" data-range="30">30d</button>
+        <button class="range-btn" data-range="90">90d</button>
+        <button class="range-btn" data-range="all">Todo</button>
+      </div>
+    </div>
+    <canvas id="weightChart" width="600" height="300"></canvas>
+    <div id="weightStats" class="weight-stats"></div>
+    <div id="emptyWeight" class="empty-hint">Todavía no registraste tu peso.</div>
+  </section>
+
+  <section class="weight-log">
+    <h3>Historial</h3>
+    <ul id="weightList" class="weight-list"></ul>
+  </section>
+</main>
+
+<main id="view-trend" class="view hidden">
+  <section class="field">
+    <label>Grupo</label>
+    <div class="cat-select" id="trendCatSelect"></div>
+  </section>
+
+  <section class="weight-chart-section">
+    <div class="chart-header">
+      <h3>Raciones por día</h3>
+      <div class="range-toggle" id="trendRangeToggle">
+        <button class="range-btn" data-range="7">7d</button>
+        <button class="range-btn active" data-range="30">30d</button>
+        <button class="range-btn" data-range="90">90d</button>
+      </div>
+    </div>
+    <canvas id="trendChart" width="600" height="260"></canvas>
+    <div id="trendStats" class="weight-stats"></div>
+  </section>
+</main>
+
+<main id="view-guide" class="view hidden">
+  <section class="guide-intro">
+    <p>Equivalencias orientativas de "1 ración" por grupo (aprox. 10 g de hidratos, proteínas o grasas según el grupo). Fuente: Escuela de Pacientes – Alimentación en Diabetes tipo 1.</p>
+  </section>
+  <div id="guideContent"></div>
+</main>
+
+<main id="view-settings" class="view hidden">
+  <section class="settings-form">
+    <h3>Metas diarias por grupo (raciones)</h3>
+    <div id="goalFields"></div>
+    <button id="saveGoals" class="primary-btn">Guardar metas</button>
+    <div id="goalsSaved" class="saved-hint hidden">Metas guardadas ✓</div>
+  </section>
+
+  <section class="settings-form">
+    <h3>Datos</h3>
+    <button id="exportData" class="secondary-btn">Exportar datos (.json)</button>
+    <button id="importDataBtn" class="secondary-btn">Importar datos</button>
+    <input id="importDataFile" type="file" accept="application/json" class="hidden" />
+    <button id="resetData" class="danger-btn">Borrar todos los datos</button>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-view="today">
+    <span class="tab-icon">🍽️</span><span>Hoy</span>
+  </button>
+  <button class="tab-btn" data-view="weight">
+    <span class="tab-icon">⚖️</span><span>Peso</span>
+  </button>
+  <button class="tab-btn" data-view="trend">
+    <span class="tab-icon">📊</span><span>Progreso</span>
+  </button>
+  <button class="tab-btn" data-view="guide">
+    <span class="tab-icon">📖</span><span>Guía</span>
+  </button>
+  <button class="tab-btn" data-view="settings">
+    <span class="tab-icon">⚙️</span><span>Config</span>
+  </button>
+</nav>
+
+<div id="addFoodModal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3>Agregar ración</h3>
+    <div class="field">
+      <label>Grupo</label>
+      <div class="cat-select" id="catSelect"></div>
+    </div>
+    <div class="field">
+      <label>Cantidad</label>
+      <div class="amount-picker">
+        <button class="amt-btn" id="amtMinus" type="button">−</button>
+        <div class="amt-value" id="amtValue">1</div>
+        <button class="amt-btn" id="amtPlus" type="button">+</button>
+      </div>
+      <div class="amt-quick" id="amtQuick">
+        <button data-amt="0.5" type="button">½</button>
+        <button data-amt="1" type="button">1</button>
+        <button data-amt="1.5" type="button">1½</button>
+        <button data-amt="2" type="button">2</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="foodName">Nota (opcional)</label>
+      <input id="foodName" type="text" placeholder="Ej: yogur natural" />
+    </div>
+    <div class="modal-actions">
+      <button id="cancelAddFood" class="secondary-btn">Cancelar</button>
+      <button id="confirmAddFood" class="primary-btn">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
